@@ -30,9 +30,9 @@ def rostopic_capture(topic, filename):
     '''
     rostopic_capture(topic, filename) -> Popen
 
-    Open a shell process to subscribe to topic and store in filename.
+    Open a subprocess to subscribe to topic and store in filename.
     '''
-    args = 'rostopic echo ' + topic + ' > ' + filename
+    args = '/opt/ros/indigo/bin/rostopic echo ' + topic + ' > ' + filename
     return subprocess.Popen(args, shell=True)
 
 
@@ -59,7 +59,7 @@ def main():
     shutil.copy('kinefly3_pin.yaml', experiment_folder)
 
     # launch kinefly and capture video to bagfile
-    kinefly_args = 'RIG=kinefly roslaunch Kinefly record.launch'
+    kinefly_args = 'RIG="kineflyjf" /opt/ros/indigo/bin/roslaunch Kinefly record.launch'
     kinefly = subprocess.Popen(kinefly_args, shell=True)
 
     # wait for kinefly to launch completely
