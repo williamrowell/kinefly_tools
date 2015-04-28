@@ -11,7 +11,9 @@ import shutil
 import subprocess
 import datetime
 
-OUTPUT_FOLDER = ''
+
+CONFIG_FOLDER = '/home/kineflyjf'
+OUTPUT_FOLDER = '/home/kineflyjf/screen_data'
 LAUNCH_DELAY = 10 # time in s to wait before launching rostopic capture
 EXPERIMENT_DURATION = 360 # duration in s, add extra time to start axoscope
 ROS_ROOT = '/opt/ros/indigo/bin'
@@ -47,10 +49,10 @@ def main():
     except OSError:
         sys.exit('Cannot create folder %s in %s.' % DATESTAMP, OUTPUT_FOLDER)
 
-    # copy kinefly.yaml files to experiment folder
-    shutil.copy('kinefly1_pin.yaml', experiment_folder)
-    shutil.copy('kinefly2_pin.yaml', experiment_folder)
-    shutil.copy('kinefly3_pin.yaml', experiment_folder)
+    # copy kinefly.yaml ROI files to experiment folder
+    shutil.copy(os.path.join(CONFIG_FOLDER, 'kinefly1_pin.yaml'), experiment_folder)
+    shutil.copy(os.path.join(CONFIG_FOLDER, 'kinefly2_pin.yaml'), experiment_folder)
+    shutil.copy(os.path.join(CONFIG_FOLDER, 'kinefly3_pin.yaml'), experiment_folder)
 
     # cd into experiment folder
     os.chdir(experiment_folder)
