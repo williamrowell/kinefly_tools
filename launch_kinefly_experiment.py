@@ -4,6 +4,7 @@
 @email: william.rowell@gmail.com
 '''
 
+import sys
 import os
 import time
 import shutil
@@ -36,9 +37,15 @@ def rostopic_capture(topic, filename):
 
 
 def main():
-    # create experiment folder from datestamp, protocol name, driver name?
+    '''
+    USAGE: launch_kinefly_experiment.py <driver_name>
+
+    Creates a unique experiment folder with the driver name, launches Kinefly,
+    captures flystate data from all three cameras.
+    '''
+    # create experiment folder from datestamp, driver name?
     DATESTAMP = datestamp()
-    experiment_folder = os.path.join(OUTPUT_FOLDER, DATESTAMP)
+    experiment_folder = os.path.join(OUTPUT_FOLDER, DATESTAMP + sys.argv[1])
     try:
         os.umask(0002)
         os.mkdir(experiment_folder, 0775)
