@@ -26,16 +26,6 @@ def datestamp(time = True):
     return datetime.strftime(datetime.now(),fmt)
 
 
-def rostopic_capture(topic, filename):
-    '''
-    rostopic_capture(topic, filename) -> Popen
-
-    Open a subprocess to subscribe to topic and store in filename.
-    '''
-    args = '/opt/ros/indigo/bin/rostopic echo ' + topic + ' > ' + filename
-    return subprocess.Popen(args, shell=True)
-
-
 def main():
     '''
     USAGE: launch_kinefly_experiment.py <driver_name>
@@ -45,18 +35,22 @@ def main():
     '''
     # create experiment folder from datestamp, driver name?
     DATESTAMP = datestamp()
-    experiment_folder = os.path.join(OUTPUT_FOLDER, DATESTAMP + sys.argv[1])
+    BASENAME = DATESTAMP + '_' + sys.argv[1]
+    experiment_folder = os.path.join(OUTPUT_FOLDER, BASENAME)
     try:
         os.umask(0002)
         os.mkdir(experiment_folder, 0775)
         os.umask(0022)
     except OSError:
-        print 'Cannot create folder %s in %s.' % DATESTAMP, OUTPUT_FOLDER
+        sys.exit('Cannot create folder %s in %s.' % DATESTAMP, OUTPUT_FOLDER)
 
     # copy kinefly.yaml files to experiment folder
     shutil.copy('kinefly1_pin.yaml', experiment_folder)
     shutil.copy('kinefly2_pin.yaml', experiment_folder)
     shutil.copy('kinefly3_pin.yaml', experiment_folder)
+
+    # cd into experiment folder
+    os.chdir(experiment_folder)
 
     # launch kinefly and capture video to bagfile
     kinefly_args = 'RIG="kineflyjf" /opt/ros/indigo/bin/roslaunch Kinefly record.launch'
@@ -66,25 +60,20 @@ def main():
     time.sleep(LAUNCH_DELAY)
 
     # launch processes to capture flystate
-    cam1_flystate = rostopic_capture('/kinefly1_pin/flystate',
-                                     os.path.join(experiment_folder, 'cam1_flystate.yaml'))
-    cam2_flystate = rostopic_capture('/kinefly2_pin/flystate',
-                                     os.path.join(experiment_folder, 'cam2_flystate.yaml'))
-    cam3_flystate = rostopic_capture('/kinefly3_pin/flystate',
-                                     os.path.join(experiment_folder, 'cam3_flystate.yaml'))
+    topic_list = ['/stimulus/ai',
+                  '/kinefly1_pin/flystate',
+                  '/kinefly2_pin/flystate',
+                  '/kinefly3_pin/flystate']
+    rosbag_args = '/out/ros/indigo/bin/rosbag record -O ' + BASENAME + '_flystate '
+    rosbag_args += ' '.join(topic_list)
+    rosbag = subprocess.Popen(rosbag_args, shell=True)
 
     # wait for the experiment to end
     time.sleep(EXPERIMENT_DURATION)
 
     # end all processes gracefully
-    cam1_flystate.terminate()
-    cam2_flystate.terminate()
-    cam3_flystate.terminate()
+    rosbag.terminate()
     kinefly.terminate()
-
-    # move files to the experiment folder
-
-
 
 if __name__ == '__main__':
     main()
