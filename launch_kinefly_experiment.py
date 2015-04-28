@@ -1,7 +1,7 @@
 '''
-@date: 20150427
+@created: 20150427
 @author: William Rowell
-@email: william.rowell@gmail.com
+@contact: william.rowell@gmail.com
 '''
 
 import sys
@@ -14,6 +14,9 @@ import datetime
 OUTPUT_FOLDER = ''
 LAUNCH_DELAY = 10 # time in s to wait before launching rostopic capture
 EXPERIMENT_DURATION = 360 # duration in s, add extra time to start axoscope
+ROS_ROOT = '/opt/ros/indigo/bin'
+ROSLAUNCH = os.path.join(ROS_ROOT, 'roslaunch')
+ROSBAG = os.path.join(ROS_ROOT, 'rosbag')
 
 
 def datestamp(time = True):
@@ -23,7 +26,7 @@ def datestamp(time = True):
     '''
     if time: fmt = '%Y%m%dT%H%M%S'
     else: fmt = '%Y%m%d'
-    return datetime.strftime(datetime.now(),fmt)
+    return datetime.strftime(datetime.now(), fmt)
 
 
 def main():
@@ -53,7 +56,10 @@ def main():
     os.chdir(experiment_folder)
 
     # launch kinefly and capture video to bagfile
-    kinefly_args = 'RIG="kineflyjf" /opt/ros/indigo/bin/roslaunch Kinefly record.launch'
+    kinefly_args = ' '.join(['RIG="kineflyjf"',
+                             ROSLAUNCH,
+                             'Kinefly',
+                             'record.launch'])
     kinefly = subprocess.Popen(kinefly_args, shell=True)
 
     # wait for kinefly to launch completely
@@ -64,8 +70,11 @@ def main():
                   '/kinefly1_pin/flystate',
                   '/kinefly2_pin/flystate',
                   '/kinefly3_pin/flystate']
-    rosbag_args = '/out/ros/indigo/bin/rosbag record -O ' + BASENAME + '_flystate '
-    rosbag_args += ' '.join(topic_list)
+    rosbag_args = ' '.join([ROSBAG,
+                            'record',
+                            '-O',
+                            BASENAME + '_flystate'] +
+                           topic_list)
     rosbag = subprocess.Popen(rosbag_args, shell=True)
 
     # wait for the experiment to end
