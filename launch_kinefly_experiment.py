@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 '''
 @created: 20150427
 @author: William Rowell
@@ -9,18 +11,36 @@ import os
 import time
 import shutil
 import subprocess
-import datetime
+import signal
+from datetime import datetime
 
 
 CONFIG_FOLDER = '/home/kineflyjf'
 OUTPUT_FOLDER = '/home/kineflyjf/screen_data'
 EXPERIMENT_DURATION = 360 # duration in s, add extra time to start axoscope
-ROS_ROOT = '/opt/ros/indigo/bin'
+ROS_ROOT = '/opt/ros/hydro/bin'
 ROSBAG = os.path.join(ROS_ROOT, 'rosbag')
+
+
+def terminate_process_and_children(p):
+    '''
+    terminate_process_and_children(Popen) -> None
+
+    Find all children of Popen process and terminate process and children.
+    '''
+    ps_command = subprocess.Popen("ps -o pid --ppid %d --noheaders" % p.pid, shell=True, stdout=subprocess.PIPE)
+    ps_output = ps_command.stdout.read()
+    retcode = ps_command.wait()
+    assert retcode == 0, "ps command returned %d" % retcode
+    for pid_str in ps_output.split("\n")[:-1]:
+            os.kill(int(pid_str), signal.SIGINT)
+    p.terminate()
 
 
 def datestamp(time = True):
     '''
+    datestamp(time = True) -> str
+
     Return a datestamp string in format yyyymmddTHHMMSS by default.
     If time = False, format is yyyymmdd.
     '''
@@ -31,14 +51,17 @@ def datestamp(time = True):
 
 def main():
     '''
-    USAGE: launch_kinefly_experiment.py <driver_name>
+    USAGE: launch_kinefly_experiment.py [<driver_name>]
 
-    Creates a unique experiment folder with the driver name, launches Kinefly,
+    Creates a unique experiment folder with the driver name,
     captures flystate data from all three cameras.
     '''
     # create experiment folder from datestamp, driver name?
     DATESTAMP = datestamp()
-    BASENAME = DATESTAMP + '_' + sys.argv[1]
+    if len(sys.argv) > 1:
+        BASENAME = DATESTAMP + '_' + sys.argv[1]
+    else:
+        BASENAME = DATESTAMP + '_' + 'test'
     experiment_folder = os.path.join(OUTPUT_FOLDER, BASENAME)
     try:
         os.umask(0002)
@@ -63,20 +86,14 @@ def main():
                   '/camera1/image_raw/compressed',
                   '/camera2/image_raw/compressed',
                   '/camera3/image_raw/compressed']
-    rosbag_args = ' '.join([ROSBAG,
-                            'record',
-                            '-O',
-                            BASENAME] +
-                           topic_list)
-    rosbag = subprocess.Popen(rosbag_args, shell=True)
+    rosbag_args = [ROSBAG, 'record', '-O', BASENAME] + topic_list
+    rosbag = subprocess.Popen(rosbag_args)
 
     # wait for the experiment to end
     time.sleep(EXPERIMENT_DURATION)
 
     # end all processes gracefully
-    rosbag.send_signal(2)
-    time.sleep(5)
-    rosbag.terminate()
+    terminate_process_and_children(rosbag)
 
 if __name__ == '__main__':
     main()
