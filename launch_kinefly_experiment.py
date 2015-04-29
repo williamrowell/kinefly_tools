@@ -14,10 +14,8 @@ import datetime
 
 CONFIG_FOLDER = '/home/kineflyjf'
 OUTPUT_FOLDER = '/home/kineflyjf/screen_data'
-LAUNCH_DELAY = 10 # time in s to wait before launching rostopic capture
 EXPERIMENT_DURATION = 360 # duration in s, add extra time to start axoscope
 ROS_ROOT = '/opt/ros/indigo/bin'
-ROSLAUNCH = os.path.join(ROS_ROOT, 'roslaunch')
 ROSBAG = os.path.join(ROS_ROOT, 'rosbag')
 
 
@@ -57,25 +55,18 @@ def main():
     # cd into experiment folder
     os.chdir(experiment_folder)
 
-    # launch kinefly and capture video to bagfile
-    kinefly_args = ' '.join(['RIG="kineflyjf"',
-                             ROSLAUNCH,
-                             'Kinefly',
-                             'record.launch'])
-    kinefly = subprocess.Popen(kinefly_args, shell=True)
-
-    # wait for kinefly to launch completely
-    time.sleep(LAUNCH_DELAY)
-
     # launch processes to capture flystate
     topic_list = ['/stimulus/ai',
                   '/kinefly1_pin/flystate',
                   '/kinefly2_pin/flystate',
-                  '/kinefly3_pin/flystate']
+                  '/kinefly3_pin/flystate',
+                  '/camera1/image_raw/compressed',
+                  '/camera2/image_raw/compressed',
+                  '/camera3/image_raw/compressed']
     rosbag_args = ' '.join([ROSBAG,
                             'record',
                             '-O',
-                            BASENAME + '_flystate'] +
+                            BASENAME] +
                            topic_list)
     rosbag = subprocess.Popen(rosbag_args, shell=True)
 
@@ -83,8 +74,9 @@ def main():
     time.sleep(EXPERIMENT_DURATION)
 
     # end all processes gracefully
+    rosbag.send_signal(2)
+    time.sleep(5)
     rosbag.terminate()
-    kinefly.terminate()
 
 if __name__ == '__main__':
     main()
