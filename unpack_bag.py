@@ -1,4 +1,4 @@
-#!/usr/bin/python
+open#!/usr/bin/python
 
 """
 @created: 20150430

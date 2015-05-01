@@ -2,9 +2,9 @@
 This is a collection of code related to the JRC DI implementation of Kinefly for screening.  Kinefly can be found [here](https://github.com/ssafarik/Kinefly), and depends on ROS, which can be found [here](http://www.ros.org/).
 
 ## [launch_kinefly_experiment.py](https://github.com/williamrowell/kinefly_tools/blob/master/launch_kinefly_experiment.py)
-### USAGE: launch_kinefly_experiment.py [<driver_name>]
+### `USAGE: launch_kinefly_experiment.py [<experiment_name>]`
 
-* creates unique experiment folder with datestamp and driver_name
+* creates unique experiment folder with datestamp and experiment_name
 * backs up yaml files containing ROI configuration to experiment folder
 * saves a 6 minute rosbag with the following topics:
   * /stimulus/ai
@@ -21,7 +21,7 @@ This is a collection of code related to the JRC DI implementation of Kinefly for
 * back up yaml files containing kinefly configuration to experiment folder
 
 ## [unpack_bag.py](https://github.com/williamrowell/kinefly_tools/blob/master/unpack_bag.py)
-### USAGE: unpack_bag.py <bag_file>
+### `USAGE: unpack_bag.py <bag_file>`
 
 * opens bag_file created by launch_kinefly_experiment.py
 * creates hdf5 file to store experimental data
