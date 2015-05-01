@@ -2,7 +2,7 @@
 
 """
 @created: 20150427
-@edited: 20150430
+@edited: 20150501
 @author: William Rowell
 @contact: william.rowell@gmail.com
 """
@@ -21,6 +21,13 @@ OUTPUT_FOLDER = '/home/kineflyjf/screen_data'
 EXPERIMENT_DURATION = 360  # duration in s, add extra time to start axoscope
 ROS_ROOT = '/opt/ros/hydro/bin'
 ROSBAG = os.path.join(ROS_ROOT, 'rosbag')
+TOPIC_LIST = ['/stimulus/ai',
+              '/kinefly1_pin/flystate',
+              '/kinefly2_pin/flystate',
+              '/kinefly3_pin/flystate',
+              '/camera1/image_raw/compressed',
+              '/camera2/image_raw/compressed',
+              '/camera3/image_raw/compressed']
 
 
 def terminate_process_and_children(p):
@@ -55,7 +62,7 @@ def main():
     USAGE: launch_kinefly_experiment.py [<driver_name>]
 
     Creates a unique experiment folder with the driver name,
-    captures flystate data from all three cameras.
+    captures flystate data, video, and analog stimulus information.
     """
     # create experiment folder from datestamp, driver name?
     DATESTAMP = datestamp()
@@ -80,14 +87,7 @@ def main():
     os.chdir(experiment_folder)
 
     # launch processes to capture flystate
-    topic_list = ['/stimulus/ai',
-                  '/kinefly1_pin/flystate',
-                  '/kinefly2_pin/flystate',
-                  '/kinefly3_pin/flystate',
-                  '/camera1/image_raw/compressed',
-                  '/camera2/image_raw/compressed',
-                  '/camera3/image_raw/compressed']
-    rosbag_args = [ROSBAG, 'record', '-O', BASENAME] + topic_list
+    rosbag_args = [ROSBAG, 'record', '-O', BASENAME] + TOPIC_LIST
     rosbag = subprocess.Popen(rosbag_args)
 
     # wait for the experiment to end
