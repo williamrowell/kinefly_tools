@@ -1,10 +1,11 @@
 #!/usr/bin/python
 
-'''
+"""
 @created: 20150427
+@edited: 20150430
 @author: William Rowell
 @contact: william.rowell@gmail.com
-'''
+"""
 
 import sys
 import os
@@ -17,17 +18,17 @@ from datetime import datetime
 
 CONFIG_FOLDER = '/home/kineflyjf'
 OUTPUT_FOLDER = '/home/kineflyjf/screen_data'
-EXPERIMENT_DURATION = 360 # duration in s, add extra time to start axoscope
+EXPERIMENT_DURATION = 360  # duration in s, add extra time to start axoscope
 ROS_ROOT = '/opt/ros/hydro/bin'
 ROSBAG = os.path.join(ROS_ROOT, 'rosbag')
 
 
 def terminate_process_and_children(p):
-    '''
+    """
     terminate_process_and_children(Popen) -> None
 
     Find all children of Popen process and terminate process and children.
-    '''
+    """
     ps_command = subprocess.Popen("ps -o pid --ppid %d --noheaders" % p.pid, shell=True, stdout=subprocess.PIPE)
     ps_output = ps_command.stdout.read()
     retcode = ps_command.wait()
@@ -38,24 +39,24 @@ def terminate_process_and_children(p):
 
 
 def datestamp(time = True):
-    '''
+    """
     datestamp(time = True) -> str
 
     Return a datestamp string in format yyyymmddTHHMMSS by default.
     If time = False, format is yyyymmdd.
-    '''
+    """
     if time: fmt = '%Y%m%dT%H%M%S'
     else: fmt = '%Y%m%d'
     return datetime.strftime(datetime.now(), fmt)
 
 
 def main():
-    '''
+    """
     USAGE: launch_kinefly_experiment.py [<driver_name>]
 
     Creates a unique experiment folder with the driver name,
     captures flystate data from all three cameras.
-    '''
+    """
     # create experiment folder from datestamp, driver name?
     DATESTAMP = datestamp()
     if len(sys.argv) > 1:

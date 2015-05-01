@@ -30,7 +30,8 @@ movie_path_root = '/home/kineflyjf/avifiles/'
 
 
 def get_topics_len(msgs):
-    """get_topics_len(msgs) -> dict
+    """
+    get_topics_len(msgs) -> dict
 
     Return a dictionary containing the length of each ros topic with the topic name as the key.
     """
@@ -43,7 +44,8 @@ def get_topics_len(msgs):
 
 
 def plot_at_time(time):
-    """Plot the three fly images at a given time
+    """
+    Plot the three fly images at a given time
 
     Find timestamps greater than the time and use these as the index for the time
     Callback for updating movie figures.
