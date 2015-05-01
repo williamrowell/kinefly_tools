@@ -27,6 +27,7 @@ This is a collection of code related to the JRC DI implementation of Kinefly.  K
 
 ### TO DO:
 
+* get around lack of `.get_types_and_topics()` in previous implementations of rosbag.Bag
 * decide which flystate information to retrieve
 * handle multidimensional flystate information (like arrays of angles)
 * implement lossless compression in hdf5 file
