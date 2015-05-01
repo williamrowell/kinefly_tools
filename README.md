@@ -5,7 +5,7 @@ This is a collection of code related to the JRC DI implementation of Kinefly.  K
 ### `USAGE: launch_kinefly_experiment.py [<exp_name>]`
 
 * creates unique experiment folder with datestamp and exp_name
-* backs up yaml files containing ROI configuration to experiment folder
+* backs up all ROS configuration state to experiment folder
 * saves a 6 minute rosbag with the following topics:
   * /stimulus/ai
   * /kinefly1_pin/flystate
@@ -17,8 +17,6 @@ This is a collection of code related to the JRC DI implementation of Kinefly.  K
 
 ### TO DO:
 
-* back up yaml files containing phidget configuration to experiment folder
-* back up yaml files containing kinefly configuration to experiment folder
 
 ## [unpack_bag.py](https://github.com/williamrowell/kinefly_tools/blob/master/unpack_bag.py)
 ### `USAGE: unpack_bag.py <bag_file>`
