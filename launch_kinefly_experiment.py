@@ -21,6 +21,7 @@ OUTPUT_FOLDER = '/home/kineflyjf/screen_data'
 EXPERIMENT_DURATION = 360  # duration in s, add extra time to start axoscope
 ROS_ROOT = '/opt/ros/hydro/bin'
 ROSBAG = os.path.join(ROS_ROOT, 'rosbag')
+ROSPARAM = os.path.join(ROS_ROOT, 'rosparam')
 TOPIC_LIST = ['/stimulus/ai',
               '/kinefly1_pin/flystate',
               '/kinefly2_pin/flystate',
@@ -78,13 +79,12 @@ def main():
     except OSError:
         sys.exit('Cannot create folder %s in %s.' % DATESTAMP, OUTPUT_FOLDER)
 
-    # copy kinefly.yaml ROI files to experiment folder
-    shutil.copy(os.path.join(CONFIG_FOLDER, 'kinefly1_pin.yaml'), experiment_folder)
-    shutil.copy(os.path.join(CONFIG_FOLDER, 'kinefly2_pin.yaml'), experiment_folder)
-    shutil.copy(os.path.join(CONFIG_FOLDER, 'kinefly3_pin.yaml'), experiment_folder)
-
     # cd into experiment folder
     os.chdir(experiment_folder)
+
+    # dump all ros parameters to rosparam.yaml
+    rosparam_args = [ROSPARAM, 'dump', '>rosparam.yaml']
+    rosparam = subprocess.Popen(rosparam_args, shell=True)
 
     # launch processes to capture flystate
     rosbag_args = [ROSBAG, 'record', '-O', BASENAME] + TOPIC_LIST
