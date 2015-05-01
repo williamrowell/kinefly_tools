@@ -15,7 +15,20 @@ This is a collection of code related to the JRC DI implementation of Kinefly for
   * /camera2/image_raw/compressed
   * /camera3/image_raw/compressed
 
-### TODO:
+### TO DO:
 
 * back up yaml files containing phidget configuration to experiment folder
 * back up yaml files containing kinefly configuration to experiment folder
+
+## [unpack_bag.py](https://github.com/williamrowell/kinefly_tools/blob/master/unpack_bag.py)
+### USAGE: unpack_bag.py <bag_file>
+
+* opens bag_file created by launch_kinefly_experiment.py
+* creates hdf5 file to store experimental data
+* retrieves and stores stimulus information, images, and specific flystate information in hdf5 file.
+
+### TO DO:
+
+* decide which flystate information to retrieve
+* handle multidimensional flystate information (like arrays of angles)
+* implement lossless compression in hdf5 file
