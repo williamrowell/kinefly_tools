@@ -82,16 +82,16 @@ def main():
     # cd into experiment folder
     os.chdir(experiment_folder)
 
-    # dump all ros parameters to rosparam.yaml
-    rosparam_args = [ROSPARAM, 'dump', '>rosparam.yaml']
-    rosparam = subprocess.Popen(rosparam_args, shell=True)
-
     # launch processes to capture flystate
     rosbag_args = [ROSBAG, 'record', '-O', BASENAME] + TOPIC_LIST
     rosbag = subprocess.Popen(rosbag_args)
 
     # wait for the experiment to end
     time.sleep(EXPERIMENT_DURATION)
+
+    # dump all ros parameters to rosparam.yaml
+    rosparam_args = [ROSPARAM, 'dump', '>rosparam.yaml']
+    rosparam = subprocess.Popen(rosparam_args, shell=True)
 
     # end all processes gracefully
     terminate_process_and_children(rosbag)
