@@ -91,7 +91,7 @@ def main():
 
     # dump all ros parameters to rosparam.yaml
     rosparam_args = [ROSPARAM, 'dump', 'rosparam.yaml']
-    rosparam = subprocess.Popen(rosparam_args, shell=True)
+    rosparam = subprocess.Popen(rosparam_args, shell=False)
 
     # end all processes gracefully
     terminate_process_and_children(rosbag)
