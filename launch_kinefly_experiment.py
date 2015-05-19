@@ -90,7 +90,7 @@ def main():
     time.sleep(EXPERIMENT_DURATION)
 
     # dump all ros parameters to rosparam.yaml
-    rosparam_args = [ROSPARAM, 'dump', '>rosparam.yaml']
+    rosparam_args = [ROSPARAM, 'dump', 'rosparam.yaml']
     rosparam = subprocess.Popen(rosparam_args, shell=True)
 
     # end all processes gracefully
