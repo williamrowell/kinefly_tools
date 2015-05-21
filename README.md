@@ -71,4 +71,5 @@ Each contains a struct array of trial components for a protocol.  Each item in t
 * stimulus_array
 * pre_delay
 * post_delay
+
 The last indexed item is always the “rest” interval used between trials.
