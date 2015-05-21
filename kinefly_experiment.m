@@ -1,8 +1,9 @@
 function kinefly_experiment( protocol_name, protocol_type, num_replicates, driver )
-%KINEFLY_EXPERIMENT Summary of this function goes here
-%   Detailed explanation goes here
-% instead of typing all protocols here, let's create a .mat with all of them
-% and load it
+%KINEFLY_EXPERIMENT General use function to drive an experiment with a sequence of trial components
+%   protocol_name      name of the .mat file containing the individual protocol components to use
+%   protocol_type      if components are A, B, C, then collated (ABCABCABC), grouped (AAABBBCCC), or random
+%   num_replicates     number of replicates of each components
+%   driver             name of the driver line to be used when saving a record
 
 load(protocol_name);
 
