@@ -54,7 +54,7 @@ This is a collection of code related to the JRC DI implementation of Kinefly.  K
 ```
 
 ## [kinefly_experiment.m](https://github.com/williamrowell/kinefly_tools/blob/master/kinefly_experiment.m)
-### `USAGE: kinefly_experiment.m( protocol_name, protocol_type, num_replicates, driver )`
+### `USAGE: kinefly_experiment( protocol_name, protocol_type, num_replicates, driver )`
 ```
 %KINEFLY_EXPERIMENT General use function to drive an experiment with a sequence of trial components
 %   protocol_name      name of the .mat file containing the individual protocol components to use
