@@ -32,8 +32,6 @@ end
 if ~exist ('AO','var')
     AO = analogoutput('mcc',0);
     ch = addchannel(AO, [0 1],{'Stimulus','TAG'});
-else
-    stop(AO)
 end
 % set sample rate
 AO.SampleRate = SAMPLE_RATE;
@@ -53,5 +51,5 @@ outsamp = repmat(trial,[1,num_trials]);
 
 putdata(AO,[outsamp',outsamp']);
 start(AO)
-
+wait(AO, num_trials*trial_length*1.1)
 end
