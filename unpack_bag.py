@@ -122,7 +122,6 @@ def unpack(bag, hdf5_file, my_topic, name, my_subtopics=None):
             for subtopic in my_subtopics: # e.g. 'head', 'abdomen', 'left', 'right', 'aux'
                 for field in my_subtopics[subtopic]: # e.g. 'angles', 'radii', 'intensity'
                     data_point = getattr(getattr(msg[1], subtopic), field)
-                    if ~data_point: next # skip to the next if the field is empty, e.g. if the ROI wasn't turned on
                     if type(data_point) == float:
                         data[subtopic][field][count] = data_point
                     elif type(data_point) == tuple:
