@@ -92,7 +92,7 @@ def unpack(bag, hdf5_file, my_topic, name, my_subtopics=None):
         tstamps = hdf5_file.create_dataset(name + '_tstamps', shape, dtype='float64')
         # store data in hdf5_file
         for count, msg in enumerate(msgs):
-            tstamps[count] = msg[1].header.stamp_to_sec()
+            tstamps[count] = msg[1].header.stamp.to_sec()
             data[count] = np.array(msg[1].voltages[:]).astype('float')
 
     elif TOPIC_TYPES[my_topic] == 'sensor_msgs/CompressedImage':
@@ -122,7 +122,7 @@ def unpack(bag, hdf5_file, my_topic, name, my_subtopics=None):
                 data[subtopic][field] = hdf5_file.create_dataset('_'.join([name, subtopic, field]), shape, dtype='float64')
         # store data in hdf5_file
         for count, msg in enumerate(msgs):
-            tstamps[count] = msg[1].header.stamp_to_sec()
+            tstamps[count] = msg[1].header.stamp.to_sec()
             for subtopic in my_subtopics:
                 for field in subtopic:
                     data_point = getattr(getattr(msgs[1], subtopic), field)
@@ -136,7 +136,7 @@ def unpack(bag, hdf5_file, my_topic, name, my_subtopics=None):
 
 
 def main():
-    bag_file = sys.argv[1:]
+    bag_file = sys.argv[1]
     base_name = bag_file[:-4]
     input_file_name = bag_file
     output_file_name = base_name + '.hdf5'
