@@ -67,7 +67,7 @@ def main():
     """
     # create experiment folder from datestamp, driver name?
     DATESTAMP = datestamp()
-    if len(sys.argv) > 1:
+    if len(sys.argv) > 2:
         BASENAME = DATESTAMP + '_' + sys.argv[1]
     else:
         BASENAME = DATESTAMP + '_' + 'test'
@@ -87,7 +87,10 @@ def main():
     rosbag = subprocess.Popen(rosbag_args)
 
     # wait for the experiment to end
-    time.sleep(EXPERIMENT_DURATION)
+    if len(sys.argv) > 2:
+        time.sleep(int(sys.argv[-1]))
+    else:
+        time.sleep(EXPERIMENT_DURATION)
 
     # dump all ros parameters to rosparam.yaml
     rosparam_args = [ROSPARAM, 'dump', 'rosparam.yaml']
