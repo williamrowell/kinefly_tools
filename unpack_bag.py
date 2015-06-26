@@ -18,7 +18,7 @@ STIM_CHANNELS = 3  # number of analog input stimulus channels
 CAM_HEIGHT = 494  # height of raw image in pixels
 CAM_WIDTH = 659  # width of raw image in pixels
 SUBTOPICS = {'/stimulus/ai': None,
-             '/kinefly1_pin/flystate':
+             '/kinefly3_pin/flystate':
                  {'head': ['angles', 'radii'],
                   'abdomen': ['angles', 'radii'],
                   'left': ['angles'],
@@ -28,7 +28,7 @@ SUBTOPICS = {'/stimulus/ai': None,
                  {'left': ['angles', 'radii'],
                   'right': ['angles', 'radii'],
                   'aux': ['intensity']},
-             '/kinefly3_pin/flystate':
+             '/kinefly1_pin/flystate':
                  {'left': ['angles', 'radii'],
                   'right': ['angles', 'radii'],
                   'aux': ['intensity']},
