@@ -120,7 +120,7 @@ def unpack(bag, hdf5_file, my_topic, name, my_subtopics=None):
         for count, msg in enumerate(msgs):
             tstamps[count] = msg[1].header.stamp.to_sec()
             for subtopic in my_subtopics:
-                for field in subtopic:
+                for field in my_subtopics[subtopic].keys():
                     data_point = getattr(getattr(msg[1], subtopic), field)
                     if type(data_point) == float:
                         data[subtopic][field][count] = data_point
