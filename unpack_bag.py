@@ -46,6 +46,22 @@ TOPIC_NAMES = {'/stimulus/ai': 'ai',
                '/camera1/image_raw/compressed': 'cam1',
                '/camera2/image_raw/compressed': 'cam2',
                '/camera3/image_raw/compressed': 'cam3'}
+TOPIC_TYPES = {'/stimulus/ai': 'Kinefly/MsgAnalogIn',
+               '/kinefly1_pin/flystate': 'Kinefly/MsgFlystate',
+               '/kinefly2_pin/flystate': 'Kinefly/MsgFlystate',
+               '/kinefly3_pin/flystate': 'Kinefly/MsgFlystate',
+               '/camera1/image_raw/compressed': 'sensor_msgs/CompressedImage',
+               '/camera2/image_raw/compressed': 'sensor_msgs/CompressedImage',
+               '/camera3/image_raw/compressed': 'sensor_msgs/CompressedImage'}
+
+
+def get_topic_counts(msgs):
+    """
+    Given a list of messages, find the topics and count for each topic.
+    """
+    topic_list = [x[0] for x in msgs]
+    topic_set = set(topic_list)
+    return {topic:topic_list.count(topic) for topic in topic_set}
 
 
 def unpack(bag, hdf5_file, my_topic, name, my_subtopics=None):
@@ -69,9 +85,9 @@ def unpack(bag, hdf5_file, my_topic, name, my_subtopics=None):
     msgs = [(topic, msg, t) for topic, msg, t
             in bag.read_messages(topics=my_topic)]
 
-    if types[my_topic] == 'Kinefly/MsgAnalogIn':
+    if TOPIC_TYPES[my_topic] == 'Kinefly/MsgAnalogIn':
         # create dataset in hdf5_file
-        shape = (topic_lengths[my_topic], STIM_CHANNELS)
+        shape = (len(msgs), STIM_CHANNELS)
         data = hdf5_file.create_dataset(name + '_data', shape, dtype='float64')
         tstamps = hdf5_file.create_dataset(name + '_tstamps', shape, dtype='float64')
         # store data in hdf5_file
@@ -79,9 +95,9 @@ def unpack(bag, hdf5_file, my_topic, name, my_subtopics=None):
             tstamps[count] = msg[1].header.stamp_to_sec()
             data[count] = np.array(msg[1].voltages[:]).astype('float')
 
-    elif types[my_topic] == 'sensor_msgs/CompressedImage':
+    elif TOPIC_TYPES[my_topic] == 'sensor_msgs/CompressedImage':
         # create dataset in hdf5_file
-        shape = (topic_lengths[my_topic], CAM_HEIGHT, CAM_WIDTH)
+        shape = (len(msgs), CAM_HEIGHT, CAM_WIDTH)
         data = hdf5_file.create_dataset(name + '_pixels', shape, dtype='uint8')
         tstamps = hdf5_file.create_dataset(name + '_tstamps', shape, dtype='float64')
         # store data in hdf5_file
@@ -94,10 +110,10 @@ def unpack(bag, hdf5_file, my_topic, name, my_subtopics=None):
             except TypeError:
                 print np.shape(pixels)
 
-    elif types[my_topic] == 'Kinefly/MsgFlystate':
+    elif TOPIC_TYPES[my_topic] == 'Kinefly/MsgFlystate':
         # create dataset in hdf5_file
         # only works for fields returning a single value
-        shape = (topic_lengths[my_topic], 1)
+        shape = (len(msgs), 1)
         tstamps = hdf5_file.create_dataset(name + '_tstamps', shape, dtype='float64')
         data = dict()
         for subtopic in my_subtopics:
@@ -131,12 +147,10 @@ def main():
     # Open the hdf5 file for writing
     hdf5_file = h5py.File(output_file_name, 'w')
 
-    types_and_topics = bag.get_type_and_topic_info()
-    topics = types_and_topics[1].keys()
-    types = {topic: types_and_topics[1][topic][0] for topic in topics}
-    topic_lengths = {topic: types_and_topics[1][topic][1] for topic in topics}
-    global types
-    global topic_lengths
+    msgs = [(topic, msg, t) for topic, msg, t in bag.read_messages()]
+
+    topic_lengths = get_topic_counts(msgs)
+    topics = topic_lengths.keys()
 
     for topic in topics:
         unpack(bag, hdf5_file, topic, TOPIC_NAMES[topic], my_subtopics=SUBTOPICS[topic])
