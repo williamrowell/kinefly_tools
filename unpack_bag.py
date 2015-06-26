@@ -84,8 +84,8 @@ def unpack(bag, hdf5_file, my_topic, name, my_subtopics=None):
     if TOPIC_TYPES[my_topic] == 'Kinefly/MsgAnalogIn':
         # create dataset in hdf5_file
         shape = (len(msgs), STIM_CHANNELS)
-        data = hdf5_file.create_dataset(name + '_data', shape, dtype='float64')
-        tstamps = hdf5_file.create_dataset(name + '_tstamps', shape, dtype='float64')
+        data = hdf5_file.create_dataset(name + '_data', shape, dtype='float64', compression="gzip")
+        tstamps = hdf5_file.create_dataset(name + '_tstamps', shape, dtype='float64', compression="gzip")
         # store data in hdf5_file
         for count, msg in enumerate(msgs):
             tstamps[count] = msg[1].header.stamp.to_sec()
@@ -94,8 +94,8 @@ def unpack(bag, hdf5_file, my_topic, name, my_subtopics=None):
     elif TOPIC_TYPES[my_topic] == 'sensor_msgs/CompressedImage':
         # create dataset in hdf5_file
         shape = (len(msgs), CAM_HEIGHT, CAM_WIDTH)
-        data = hdf5_file.create_dataset(name + '_pixels', shape, dtype='uint8')
-        tstamps = hdf5_file.create_dataset(name + '_tstamps', shape, dtype='float64')
+        data = hdf5_file.create_dataset(name + '_pixels', shape, dtype='uint8', compression="gzip")
+        tstamps = hdf5_file.create_dataset(name + '_tstamps', shape, dtype='float64', compression="gzip")
         # store data in hdf5_file
         for count, msg in enumerate(msgs):
             try:
@@ -108,20 +108,21 @@ def unpack(bag, hdf5_file, my_topic, name, my_subtopics=None):
 
     elif TOPIC_TYPES[my_topic] == 'Kinefly/MsgFlystate':
         # create dataset in hdf5_file
-        # only works for fields returning a single value
+        # only works for fields returning a float or a tuple with only one element (i.e. can't return multiple edges)
         shape = (len(msgs), 1)
-        tstamps = hdf5_file.create_dataset(name + '_tstamps', shape, dtype='float64')
+        tstamps = hdf5_file.create_dataset(name + '_tstamps', shape, dtype='float64', compression="gzip")
         data = dict()
         for subtopic in my_subtopics:
             data[subtopic] = dict()
             for field in my_subtopics[subtopic]:
-                data[subtopic][field] = hdf5_file.create_dataset('_'.join([name, subtopic, field]), shape, dtype='float64')
+                data[subtopic][field] = hdf5_file.create_dataset('_'.join([name, subtopic, field]), shape, dtype='float64', compression="gzip")
         # store data in hdf5_file
         for count, msg in enumerate(msgs):
             tstamps[count] = msg[1].header.stamp.to_sec()
-            for subtopic in my_subtopics:
-                for field in my_subtopics[subtopic]:
+            for subtopic in my_subtopics: # e.g. 'head', 'abdomen', 'left', 'right', 'aux'
+                for field in my_subtopics[subtopic]: # e.g. 'angles', 'radii', 'intensity'
                     data_point = getattr(getattr(msg[1], subtopic), field)
+                    if ~data_point: next # skip to the next if the field is empty, e.g. if the ROI wasn't turned on
                     if type(data_point) == float:
                         data[subtopic][field][count] = data_point
                     elif type(data_point) == tuple:
