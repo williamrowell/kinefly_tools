@@ -158,7 +158,7 @@ for exp_folder in exp_folders:
     movie_base_name = base_name
 
     # Load the yaml file
-    yaml_dict = load('rosparam.yaml')
+    yaml_dict = load_yaml('rosparam.yaml')
 
     # Load bagfiles and create a list of messages
     bag = rosbag.Bag(input_file_name)
