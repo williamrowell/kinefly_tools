@@ -147,7 +147,7 @@ def plot_rois(canvas, kinefly_pin, yaml_dict):
 # Set file paths and file names
 exp_folders = sys.argv[1:]
 
-START_DIR = os.path.getcwd()
+START_DIR = os.getcwd()
 
 for exp_folder in exp_folders:
     print exp_folder
