@@ -2,6 +2,7 @@
 
 import sys
 import os
+import yaml
 import h5py
 import cv2
 import rosbag
@@ -10,6 +11,7 @@ import numpy as np
 import matplotlib.animation as animation
 
 from matplotlib import pylab, mlab, pyplot
+from matplotlib.patches import Ellipse, Wedge
 from pylab import *
 
 plt = pyplot
@@ -24,9 +26,19 @@ POST_STIM = 2 # seconds of video after stimulus
 INTER_STIM = 200 # number of timestamps between stimulus events
 FRAME_INTERVAL = 0.03 # time interval between frames in seconds
 PLAYBACK_FRAME_RATE = 33  # playback frame rate of output video
-input_path_root = '/home/kineflyjf/bagfiles/'
-output_path_root ='/home/kineflyjf/hdf5files/'
-movie_path_root = '/home/kineflyjf/avifiles/'
+#input_path_root = '/home/kineflyjf/bagfiles/'
+#output_path_root ='/home/kineflyjf/hdf5files/'
+#movie_path_root = '/home/kineflyjf/avifiles/'
+
+
+def load_yaml(yaml_file):
+    """
+    Given a dump of all kinefly parameters from ros (yaml_file), produce a dict
+    of key->value pairs.
+    """
+    with open(yaml_file, 'r') as myfile:
+        data=myfile.read()
+    return yaml.load(data)
 
 
 def get_topics_len(msgs):
@@ -55,8 +67,11 @@ def plot_at_time(time):
     c3_idx = np.where(c3_ts > time)[0][0]
     ai_idx = np.where(ai_ts > time)[0][0]
     im1.set_array(cam1_pixels[c1_idx])
+    plot_rois(im1, 'kinefly1_pin', yaml_dict)
     im2.set_array(cam2_pixels[c2_idx])
+    plot_rois(im2, 'kinefly2_pin', yaml_dict)
     im3.set_array(cam3_pixels[c3_idx])
+    plot_rois(im3, 'kinefly3_pin', yaml_dict)
     if ai_data[ai_idx, STIM_CHANNEL] > STIM_DIFF_THRESHOLD:
         left_txt.set_text('*')
         center_txt.set_text('*')
@@ -70,25 +85,90 @@ def plot_at_time(time):
     return [im1, im2, im3]
 
 
-# Set file paths and file names
-bag_files = sys.argv[1:]
+def plot_rois(canvas, kinefly_pin, yaml_dict):
+    """
+    Given a yaml_dict with ROI descriptors, draw the kinefly ROIs on canvas.
+    """
+    # draw left wing
+    roi = yaml_dict[kinefly_pin]['gui']['left']
+    left = Wedge(center=[roi['hinge']['x'], roi['hinge']['y']],
+                 r=roi['radius_inner'],
+                 width=roi['radius_outer']-roi['radius_inner'],
+                 theta1=np.degrees(roi['angle_lo']),
+                 theta2=np.degrees(roi['angle_hi']),
+                 fill=False,
+                 ec='g')
+    canvas.add_artist(left)
 
-for bag_file in bag_files:
-    print bag_file
-    base_name = bag_file[:-4]
-    input_file_name = bag_file
+    # draw right wing
+    roi = yaml_dict[kinefly_pin]['gui']['right']
+    right = Wedge(center=[roi['hinge']['x'], roi['hinge']['y']],
+                  r=roi['radius_inner'],
+                  width=roi['radius_outer']-roi['radius_inner'],
+                  theta1=np.degrees(roi['angle_lo']),
+                  theta2=np.degrees(roi['angle_hi']),
+                  fill=False,
+                  ec='r')
+    canvas.add_artist(right)
+
+    # draw head
+    roi = yaml_dict[kinefly_pin]['gui']['head']
+    head = Wedge(center=[roi['hinge']['x'], roi['hinge']['y']],
+                 r=roi['radius_inner'],
+                 width=roi['radius_outer']-roi['radius_inner'],
+                 theta1=np.degrees(roi['angle_lo']),
+                 theta2=np.degrees(roi['angle_hi']),
+                 fill=False,
+                 ec='c')
+    canvas.add_artist(head)
+
+    # draw abdomen
+    roi = yaml_dict[kinefly_pin]['gui']['abdomen']
+    abd = Wedge(center=[roi['hinge']['x'], roi['hinge']['y']],
+                r=roi['radius_inner'],
+                width=roi['radius_outer']-roi['radius_inner'],
+                theta1=np.degrees(roi['angle_lo']),
+                theta2=np.degrees(roi['angle_hi']),
+                fill=False,
+                ec='m')
+    canvas.add_artist(abd)
+
+    # draw aux roi
+    roi = yaml_dict[kinefly_pin]['gui']['aux']
+    aux = Ellipse(xy=[roi['hinge']['x'], roi['hinge']['y']],
+                  width=roi['radius1'],
+                  height=roi['radius2'],
+                  angle=np.degrees(roi['angle']),
+                  fill=False,
+                  ec='y')
+    canvas.add_artist(aux)
+
+
+# Set file paths and file names
+exp_folders = sys.argv[1:]
+
+START_DIR = `pwd`
+
+for exp_folder in exp_folders:
+    print exp_folder
+    os.chdir(exp_folder)
+    base_name = exp_folder
+    input_file_name = base_name + '.bag'
     output_file_name = base_name + '.hdf5'
     movie_base_name = base_name
 
+    # Load the yaml file
+    yaml_dict = load('rosparam.yaml')
+
     # Load bagfiles and create a list of messages
-    bag = rosbag.Bag(input_path_root + input_file_name)
+    bag = rosbag.Bag(input_file_name)
     msgs = [(topic, msg, t) for topic, msg, t in bag.read_messages()]
 
     # Get the lengths (# samples) in each topic to determine shape of data
     topic_lengths = get_topics_len(msgs)
 
     # Open the hdf5 file for writing
-    hdf5_file = h5py.File(output_path_root + output_file_name, 'w')
+    hdf5_file = h5py.File(output_file_name, 'w')
 
     # Load the stimulus data into the hdf5 file
     ai_shape = (topic_lengths['/stimulus/ai'], 3)
@@ -209,7 +289,7 @@ for bag_file in bag_files:
         ani = animation.FuncAnimation(fig1, plot_at_time, frames=frames)
 
         # records the movie as an uncompressed AVI
-        movie_file_name = movie_path_root + movie_base_name + '_' + 'stim' + str(stim_counter) + '.avi'
+        movie_file_name = movie_base_name + '_' + 'stim' + str(stim_counter) + '.avi'
         ani.save(movie_file_name, fps=PLAYBACK_FRAME_RATE, extra_args=['-vcodec', 'rawvideo', '-b', '5000k'])
 
         stim_counter += 1
@@ -218,4 +298,6 @@ for bag_file in bag_files:
     hdf5_file.close()
 
     # Remove HDF5 file
-    os.remove(output_path_root + output_file_name)
+    os.remove(output_file_name)
+
+    os.chdir(START_DIR)
