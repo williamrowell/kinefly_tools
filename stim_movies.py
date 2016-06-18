@@ -25,11 +25,8 @@ PRE_STIM = 1  # seconds of video before stimulus
 POST_STIM = 2 # seconds of video after stimulus
 INTER_STIM = 200 # number of timestamps between stimulus events
 FRAME_INTERVAL = 0.03 # time interval between frames in seconds
-PLAYBACK_FRAME_RATE = 33  # playback frame rate of output video
-#input_path_root = '/home/kineflyjf/bagfiles/'
-#output_path_root ='/home/kineflyjf/hdf5files/'
-#movie_path_root = '/home/kineflyjf/avifiles/'
-
+PLAYBACK_FRAME_RATE = 11 # playback frame rate of output video
+PLOT_ROI = True
 
 def load_yaml(yaml_file):
     """
@@ -67,11 +64,11 @@ def plot_at_time(time):
     c3_idx = np.where(c3_ts > time)[0][0]
     ai_idx = np.where(ai_ts > time)[0][0]
     im1.set_array(cam1_pixels[c1_idx])
-    plot_rois(im1, 'kinefly1_pin', yaml_dict)
+    if PLOT_ROI: plot_rois(ax1, 'kinefly1_pin', yaml_dict)
     im2.set_array(cam2_pixels[c2_idx])
-    plot_rois(im2, 'kinefly2_pin', yaml_dict)
+    if PLOT_ROI: plot_rois(ax2, 'kinefly2_pin', yaml_dict)
     im3.set_array(cam3_pixels[c3_idx])
-    plot_rois(im3, 'kinefly3_pin', yaml_dict)
+    if PLOT_ROI: plot_rois(ax3, 'kinefly3_pin', yaml_dict)
     if ai_data[ai_idx, STIM_CHANNEL] > STIM_DIFF_THRESHOLD:
         left_txt.set_text('*')
         center_txt.set_text('*')
@@ -91,57 +88,62 @@ def plot_rois(canvas, kinefly_pin, yaml_dict):
     """
     # draw left wing
     roi = yaml_dict[kinefly_pin]['gui']['left']
-    left = Wedge(center=[roi['hinge']['x'], roi['hinge']['y']],
-                 r=roi['radius_inner'],
-                 width=roi['radius_outer']-roi['radius_inner'],
-                 theta1=np.degrees(roi['angle_lo']),
-                 theta2=np.degrees(roi['angle_hi']),
-                 fill=False,
-                 ec='g')
-    canvas.add_artist(left)
+    if roi['track']:
+        left = Wedge(center=[roi['hinge']['x'], roi['hinge']['y']],
+                     r=int(np.ceil(roi['radius_outer'])),
+                     width=int(np.ceil(roi['radius_outer']))-int(np.floor(roi['radius_inner'])),
+                     theta1=int(np.ceil(np.degrees(roi['angle_lo']))),
+                     theta2=int(np.floor(np.degrees(roi['angle_hi']))),
+                     fill=False,
+                    ec='g')
+        canvas.add_artist(left)
 
     # draw right wing
     roi = yaml_dict[kinefly_pin]['gui']['right']
-    right = Wedge(center=[roi['hinge']['x'], roi['hinge']['y']],
-                  r=roi['radius_inner'],
-                  width=roi['radius_outer']-roi['radius_inner'],
-                  theta1=np.degrees(roi['angle_lo']),
-                  theta2=np.degrees(roi['angle_hi']),
-                  fill=False,
-                  ec='r')
-    canvas.add_artist(right)
+    if roi['track']:
+        right = Wedge(center=[roi['hinge']['x'], roi['hinge']['y']],
+                    r=int(np.ceil(roi['radius_outer'])),
+                    width=int(np.ceil(roi['radius_outer']))-int(np.floor(roi['radius_inner'])),
+                    theta1=int(np.ceil(np.degrees(roi['angle_lo']))),
+                    theta2=int(np.floor(np.degrees(roi['angle_hi']))),
+                    fill=False,
+                    ec='r')
+        canvas.add_artist(right)
 
     # draw head
     roi = yaml_dict[kinefly_pin]['gui']['head']
-    head = Wedge(center=[roi['hinge']['x'], roi['hinge']['y']],
-                 r=roi['radius_inner'],
-                 width=roi['radius_outer']-roi['radius_inner'],
-                 theta1=np.degrees(roi['angle_lo']),
-                 theta2=np.degrees(roi['angle_hi']),
-                 fill=False,
-                 ec='c')
-    canvas.add_artist(head)
+    if roi['track']:
+        head = Wedge(center=[roi['hinge']['x'], roi['hinge']['y']],
+                    r=int(np.ceil(roi['radius_outer'])),
+                    width=int(np.ceil(roi['radius_outer']))-int(np.floor(roi['radius_inner'])),
+                    theta1=int(np.ceil(np.degrees(roi['angle_lo']))),
+                    theta2=int(np.floor(np.degrees(roi['angle_hi']))),
+                    fill=False,
+                    ec='c')
+        canvas.add_artist(head)
 
     # draw abdomen
     roi = yaml_dict[kinefly_pin]['gui']['abdomen']
-    abd = Wedge(center=[roi['hinge']['x'], roi['hinge']['y']],
-                r=roi['radius_inner'],
-                width=roi['radius_outer']-roi['radius_inner'],
-                theta1=np.degrees(roi['angle_lo']),
-                theta2=np.degrees(roi['angle_hi']),
-                fill=False,
-                ec='m')
-    canvas.add_artist(abd)
+    if roi['track']:
+        abd = Wedge(center=[roi['hinge']['x'], roi['hinge']['y']],
+                    r=int(np.ceil(roi['radius_outer'])),
+                    width=int(np.ceil(roi['radius_outer']))-int(np.floor(roi['radius_inner'])),
+                    theta1=int(np.ceil(np.degrees(roi['angle_lo']))),
+                    theta2=int(np.floor(np.degrees(roi['angle_hi']))),
+                    fill=False,
+                    ec='m')
+        canvas.add_artist(abd)
 
     # draw aux roi
     roi = yaml_dict[kinefly_pin]['gui']['aux']
-    aux = Ellipse(xy=[roi['hinge']['x'], roi['hinge']['y']],
-                  width=roi['radius1'],
-                  height=roi['radius2'],
-                  angle=np.degrees(roi['angle']),
-                  fill=False,
-                  ec='y')
-    canvas.add_artist(aux)
+    if roi['track']:
+        aux = Ellipse(xy=[roi['center']['x'], roi['center']['y']],
+                    width=int(np.ceil(roi['radius1'])),
+                    height=int(np.ceil(roi['radius2'])),
+                    angle=int(np.ceil(np.degrees(roi['angle']))),
+                    fill=False,
+                    ec='y')
+        canvas.add_artist(aux)
 
 
 # Set file paths and file names
@@ -152,7 +154,7 @@ START_DIR = os.getcwd()
 for exp_folder in exp_folders:
     print exp_folder
     os.chdir(exp_folder)
-    base_name = exp_folder
+    base_name = exp_folder.split('/')[-1]
     input_file_name = base_name + '.bag'
     output_file_name = base_name + '.hdf5'
     movie_base_name = base_name
@@ -267,21 +269,27 @@ for exp_folder in exp_folders:
         fig1 = figure(figsize=(12, 3))
         subplot(1, 3, 1)
         im1 = imshow(cam1_pixels[0], cmap=cm.gray)
-        gca().set_xticklabels([])
-        gca().set_yticklabels([])
-        left_txt = gca().text(60, 60, '', fontsize=20, color='w')
+        ax1 = gca()
+        if PLOT_ROI: plot_rois(ax1, 'kinefly1_pin', yaml_dict)
+        ax1.set_xticklabels([])
+        ax1.set_yticklabels([])
+        left_txt = ax1.text(60, 60, '', fontsize=20, color='w')
 
         subplot(1, 3, 2)
         im2 = imshow(cam2_pixels[0], cmap=cm.gray)
-        gca().set_xticklabels([])
-        gca().set_yticklabels([])
-        center_txt = gca().text(60, 60, '', fontsize=20, color='w')
+        ax2 = gca()
+        if PLOT_ROI: plot_rois(ax2, 'kinefly2_pin', yaml_dict)
+        ax2.set_xticklabels([])
+        ax2.set_yticklabels([])
+        center_txt = ax2.text(60, 60, '', fontsize=20, color='w')
 
         subplot(1, 3, 3)
         im3 = imshow(cam3_pixels[0], cmap=cm.gray)
-        gca().set_xticklabels([])
-        gca().set_yticklabels([])
-        right_txt = gca().text(60, 60, '', fontsize=20, color='w')
+        ax3 = gca()
+        if PLOT_ROI: plot_rois(ax3, 'kinefly3_pin', yaml_dict)
+        ax3.set_xticklabels([])
+        ax3.set_yticklabels([])
+        right_txt = ax3.text(60, 60, '', fontsize=20, color='w')
 
         subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
 
@@ -289,8 +297,10 @@ for exp_folder in exp_folders:
         ani = animation.FuncAnimation(fig1, plot_at_time, frames=frames)
 
         # records the movie as an uncompressed AVI
-        movie_file_name = movie_base_name + '_' + 'stim' + str(stim_counter) + '.avi'
+        movie_file_name = movie_base_name + '_' + 'stim' + str(stim_counter).zfill(2) + '.avi'
         ani.save(movie_file_name, fps=PLAYBACK_FRAME_RATE, extra_args=['-vcodec', 'rawvideo', '-b', '5000k'])
+
+        plt.close()
 
         stim_counter += 1
 
